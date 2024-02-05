@@ -10,6 +10,8 @@ DIRECTION_OFFSET = {
 }
 
 SPEED_KEY = pygame.K_DOWN
+ROTATE_RIGHT_KEY = pygame.K_UP 
+ROTATE_LEFT_KEY = pygame.K_z
 
 class Game():
     def __init__(self):
@@ -75,6 +77,10 @@ class Game():
             self.current_block.moveSide(DIRECTION_OFFSET[key])
         if key == SPEED_KEY:
             self.block_time = 0.1
+        if key == ROTATE_RIGHT_KEY:
+            self.current_block.rotate(90)
+        if key == ROTATE_LEFT_KEY:
+            self.current_block.rotate(-90)
 
     def registerKeyRelease(self, key):
         """Key listener"""
