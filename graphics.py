@@ -61,9 +61,11 @@ class Graphics():
 
         if self.game.holding != None:
             block = self.game.holding
-            hold_x = self.holdX + (((self.holdingSize - block.width) // 2) * self.cubeSize)
-            hold_y = self.holdY + (((self.holdingSize - block.height) // 2) * self.cubeSize)
-
+            hold_x = self.holdX + ((self.cubeSize * self.holdingSize) // 2)
+            hold_x = hold_x - ((block.width * self.cubeSize) // 2)
+            hold_y = self.holdY + ((self.cubeSize * self.holdingSize) // 2)
+            hold_y = hold_y - ((block.height * self.cubeSize) // 2)
+                
             for y, row in enumerate(block.pattern):
                 for x, state in enumerate(row):
                     if state == 1:
