@@ -12,6 +12,7 @@ DIRECTION_OFFSET = {
 SPEED_KEY = pygame.K_DOWN
 ROTATE_RIGHT_KEY = pygame.K_UP 
 ROTATE_LEFT_KEY = pygame.K_z
+HOLD_BLOCK_KEY = pygame.K_c
 
 class Game():
     def __init__(self):
@@ -23,9 +24,10 @@ class Game():
 
         # Graphics
         self.graphics = Graphics((640+190, 850), self)
-        self.graphics.bgcolor = (45, 45, 45)
-        self.graphics.seccolor = (40, 40, 40)
-        self.graphics.linecol = (230, 230, 230)
+        self.graphics.setDrawLines(False)
+
+        # Logic info 
+        self.running = False
 
         # Grid
         self.width = 10 
@@ -39,6 +41,10 @@ class Game():
         self.last_drop = time.time()
         self.block_time = 0.5
 
+        # Holding block info
+        self.holding = None 
+        self.has_triggered_holding = False
+
         # Initially add first block to grid
         self.chooseNextBlock()
 
@@ -47,6 +53,25 @@ class Game():
         self.current_block = self.next_blocks.pop(0)
         self.next_blocks.append(random.choice(BLOCKS)(self))
         self.current_block.addToGrid()
+
+    def holdCurrentBlock(self):
+        """Holds the current block and replaces the current block with either a new block, or what was in holding prior"""
+        # If they have already tried to hold a block this turn, we disallow it.
+        if (self.has_triggered_holding): return 
+        
+        # Store the current block in a temp variable and remove it from the grid
+        self.current_block.removeFromGrid()
+        temp_block = self.current_block 
+
+        if (self.holding != None):
+            self.current_block = self.holding
+            self.current_block.resetPosition()
+            self.current_block.addToGrid() 
+        else:
+            self.chooseNextBlock()
+
+        self.holding = temp_block 
+        self.has_triggered_holding = True 
 
     def tick(self):
         """Called every tick"""
@@ -58,6 +83,7 @@ class Game():
             collision = self.current_block.willCollideWithBlock(0, 1)
             if collision: 
                 self.chooseNextBlock()
+                self.has_triggered_holding = False 
             else:
                 self.current_block.moveDown()
 
@@ -81,6 +107,8 @@ class Game():
             self.current_block.rotate(90)
         if key == ROTATE_LEFT_KEY:
             self.current_block.rotate(-90)
+        if key == HOLD_BLOCK_KEY:
+            self.holdCurrentBlock()
 
     def registerKeyRelease(self, key):
         """Key listener"""
