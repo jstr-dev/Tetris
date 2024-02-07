@@ -4,6 +4,7 @@ import random
 import pygame
 import time 
 
+# Direction offset
 DIRECTION_OFFSET = {
     pygame.K_RIGHT: 1,
     pygame.K_LEFT: -1
