@@ -11,10 +11,11 @@ class Graphics():
 
         self.cubeSize = 35
 
+        self.holdingSize = 4
         self.holdX = 50 
         self.holdY = 100
-        self.holdWide = self.cubeSize*4
-        self.holdTall = self.cubeSize*4
+        self.holdWide = self.cubeSize * self.holdingSize
+        self.holdTall = self.cubeSize * self.holdingSize
 
         self.gridWide = 350 
         self.gridTall = self.gridWide * 2
@@ -27,43 +28,63 @@ class Graphics():
         self.nextTall = self.cubeSize*8
 
         self.graphics = pygame.display.set_mode(res)
+        self.bgcolor = (45, 45, 45)
+        self.seccolor = (40, 40, 40)
+        self.linecol = (230, 230, 230)
 
-        self.running = False 
-        self.bgcolor = None 
-        self.linecol = None
-        self.seccolor = None 
+        self.draw_lines = True 
+
+    def setDrawLines(self, bool):
+        """Controls whether grid lines should be drawn"""
+        self.draw_lines = bool
+
+    def renderGrid(self):
+        for y, d in enumerate(self.game.grid): 
+            for x, state in enumerate(d):
+                if state == 1:
+                    pygame.draw.rect(self.graphics, self.game.gridcol[y][x], (self.gridX + (self.cubeSize*x), self.gridY + (self.cubeSize*y), self.cubeSize, self.cubeSize))
+
+        if self.draw_lines:
+            for x in range(11):
+                pygame.draw.line(self.graphics, self.linecol, (self.gridX + (self.cubeSize * x), self.gridY), (self.gridX + (self.cubeSize * x), self.gridTall+self.gridY))
+            for y in range(21):
+                pygame.draw.line(self.graphics, self.linecol, (self.gridX, self.gridY + (self.cubeSize * y)), (self.gridWide + self.gridX, self.gridY + (self.cubeSize * y)))
+
+    def renderHolding(self):
+        pygame.draw.rect(self.graphics, self.seccolor, (self.holdX, self.holdY, self.holdWide, self.holdTall))
+        
+        if self.draw_lines:
+            for x in range(5):
+                pygame.draw.line(self.graphics, self.linecol, (self.holdX + (self.cubeSize * x), self.holdY), (self.holdX + (self.cubeSize * x), self.holdTall+self.holdY))
+            for y in range(5):
+                pygame.draw.line(self.graphics, self.linecol, (self.holdX, self.holdY + (self.cubeSize * y)), (self.holdWide + self.holdX, self.holdY + (self.cubeSize * y))) 
+
+        if self.game.holding != None:
+            block = self.game.holding
+            hold_x = self.holdX + (((self.holdingSize - block.width) // 2) * self.cubeSize)
+            hold_y = self.holdY + (((self.holdingSize - block.height) // 2) * self.cubeSize)
+
+            for y, row in enumerate(block.pattern):
+                for x, state in enumerate(row):
+                    if state == 1:
+                        pygame.draw.rect(self.graphics, block.getColour(), (hold_x + (self.cubeSize*x), hold_y + (self.cubeSize*y), self.cubeSize, self.cubeSize)) 
+
+    def renderNextBlocks(self):
+        pygame.draw.rect(self.graphics, self.seccolor, (self.nextX, self.nextY, self.nextWide, self.nextTall))
+        
+        if self.draw_lines:
+            for x in range(5):
+                pygame.draw.line(self.graphics, self.linecol, (self.nextX + (self.cubeSize * x), self.nextY), (self.nextX + (self.cubeSize * x), self.nextTall+self.nextY))
+            for y in range(9):
+                pygame.draw.line(self.graphics, self.linecol, (self.nextX, self.nextY + (self.cubeSize * y)), (self.nextWide + self.nextX, self.nextY + (self.cubeSize * y)))
 
     def render(self):
         self.graphics.fill(self.bgcolor)
         pygame.draw.rect(self.graphics, self.seccolor, (self.gridX, self.gridY, self.gridWide, self.gridTall))
-
-        # draw them thicc blocks 
-        for y, d in enumerate(self.game.grid): 
-            for x, matrixVal in enumerate(d):
-                if matrixVal == 1:
-                    pygame.draw.rect(self.graphics, self.game.gridcol[y][x], (self.gridX + (self.cubeSize*x), self.gridY + (self.cubeSize*y), self.cubeSize, self.cubeSize))
-
         
-        # draw board 
-        for x in range(11):
-            pygame.draw.line(self.graphics, self.linecol, (self.gridX + (self.cubeSize * x), self.gridY), (self.gridX + (self.cubeSize * x), self.gridTall+self.gridY))
-        for y in range(21):
-            pygame.draw.line(self.graphics, self.linecol, (self.gridX, self.gridY + (self.cubeSize * y)), (self.gridWide + self.gridX, self.gridY + (self.cubeSize * y)))
+        # Render normal game
+        self.renderGrid()
+        self.renderNextBlocks()
+        self.renderHolding()
 
-        # draw next 
-        pygame.draw.rect(self.graphics, self.seccolor, (self.nextX, self.nextY, self.nextWide, self.nextTall))
-        
-        for x in range(5):
-            pygame.draw.line(self.graphics, self.linecol, (self.nextX + (self.cubeSize * x), self.nextY), (self.nextX + (self.cubeSize * x), self.nextTall+self.nextY))
-        for y in range(9):
-            pygame.draw.line(self.graphics, self.linecol, (self.nextX, self.nextY + (self.cubeSize * y)), (self.nextWide + self.nextX, self.nextY + (self.cubeSize * y)))
-
-        # draw hold 
-        pygame.draw.rect(self.graphics, self.seccolor, (self.holdX, self.holdY, self.holdWide, self.holdTall))
-        
-        for x in range(5):
-            pygame.draw.line(self.graphics, self.linecol, (self.holdX + (self.cubeSize * x), self.holdY), (self.holdX + (self.cubeSize * x), self.holdTall+self.holdY))
-        for y in range(5):
-            pygame.draw.line(self.graphics, self.linecol, (self.holdX, self.holdY + (self.cubeSize * y)), (self.holdWide + self.holdX, self.holdY + (self.cubeSize * y)))
-        
         pygame.display.update()

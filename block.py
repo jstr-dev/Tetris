@@ -1,11 +1,11 @@
 import random 
 
 colours = [
-    (255, 0, 0), #red
-    (0, 255, 0), #green
-    (0, 0, 255), #blue
-    (255, 255, 0), #iforgot 
-    (0, 255, 255) # one is cyan one is yellow i think
+    (255, 0, 0), 
+    (0, 255, 0), 
+    (0, 0, 255), 
+    (255, 255, 0),
+    (0, 255, 255) 
 ]
 
 class Block():
@@ -14,6 +14,10 @@ class Block():
         self.pattern = None 
         self.game = game
 
+    def resetPosition(self):
+        self.x = 5 - (self.width // 2)
+        self.y = 0 
+
     def setPattern(self, pattern):
         """Defines the shape of the block"""
         self.pattern = pattern
@@ -21,9 +25,9 @@ class Block():
 
         self.height = len(self.pattern)
         self.width = len(self.pattern[0])
-        self.x = 5 - (self.width // 2)
-        self.y = 0 
-        self.colour = colours[random.randrange(0, 4)]
+        self.resetPosition()
+
+        self.colour = colours[random.randrange(0, 5)]
         self.relative_coords = set()
     
     def getColour(self):
@@ -49,6 +53,7 @@ class Block():
 
                     if self.game.grid[new_y][new_x] != 0 and (new_y, new_x) not in self.relative_coords:
                         return True
+                    
         return False
 
     def addToGrid(self):
