@@ -114,7 +114,13 @@ class Block():
         self.width = len(self.pattern[0])
         self.addToGrid()
 
+    def drop(self):
+        """Drop a block to the bottom"""
+        while not self.willCollideWithBlock(0, 1):
+            self.moveDown()
 
+        self.game.blockLogic()
+        
 class StraightBlock(Block):
     def __init__(self, game):
        super().__init__(game)

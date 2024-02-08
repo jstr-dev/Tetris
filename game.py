@@ -14,6 +14,7 @@ SPEED_KEY = pygame.K_DOWN
 ROTATE_RIGHT_KEY = pygame.K_UP 
 ROTATE_LEFT_KEY = pygame.K_z
 HOLD_BLOCK_KEY = pygame.K_c
+HARD_DROP_BLOCK_KEY = pygame.K_SPACE
 
 class Game():
     def __init__(self):
@@ -76,17 +77,7 @@ class Game():
 
     def tick(self):
         """Called every tick"""
-        time_since_drop = time.time() - self.last_drop
-        if time_since_drop > self.block_time:
-            self.last_drop = time.time()
-
-            # Collision detection
-            collision = self.current_block.willCollideWithBlock(0, 1)
-            if collision: 
-                self.chooseNextBlock()
-                self.has_triggered_holding = False 
-            else:
-                self.current_block.moveDown()
+        self.blockLogic()
 
         for e in pygame.event.get():
             if e.type == pygame.QUIT: 
@@ -110,11 +101,48 @@ class Game():
             self.current_block.rotate(-90)
         if key == HOLD_BLOCK_KEY:
             self.holdCurrentBlock()
+        if key == HARD_DROP_BLOCK_KEY:
+            self.current_block.drop()
 
     def registerKeyRelease(self, key):
         """Key listener"""
         if key == SPEED_KEY:
             self.block_time = 0.5
+
+    def blockLogic(self):
+        self.checkClearLines()
+        time_since_drop = time.time() - self.last_drop
+        if time_since_drop > self.block_time:
+            self.last_drop = time.time()
+            # Collision detection
+            collision = self.current_block.willCollideWithBlock(0, 1)
+            if collision:
+                self.chooseNextBlock()
+                self.has_triggered_holding = False 
+            else:
+                self.current_block.moveDown()
+
+    def checkClearLines(self):
+        """Check and clear any completed lines from the grid"""
+        lines_to_clear = []
+        for y in range(self.height):
+            if all(cell != 0 for cell in self.grid[y]):
+                lines_to_clear.append(y)
+
+        for y in lines_to_clear:
+            # Clear the line by setting all cells to 0
+            for x in range(self.width):
+                self.grid[y][x] = 0
+                self.gridcol[y][x] = None 
+
+            # Move all lines above the cleared line down by 1
+            for row in range(y, 0, -1):
+                self.grid[row] = self.grid[row - 1]
+                self.gridcol[row] = self.gridcol[row - 1]
+
+            # Insert a new empty line at the top
+            self.grid[0] = [0] * self.width
+            self.gridcol[0] = [None] * self.width
 
     def start(self):
         self.running = True 
