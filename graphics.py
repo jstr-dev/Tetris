@@ -80,6 +80,28 @@ class Graphics():
             for y in range(9):
                 pygame.draw.line(self.graphics, self.linecol, (self.nextX, self.nextY + (self.cubeSize * y)), (self.nextWide + self.nextX, self.nextY + (self.cubeSize * y)))
 
+        for i in range(len(self.game.next_blocks)):
+            # Get the current block
+            block = self.game.next_blocks[i]
+
+            if block.height > block.width:
+                block.pattern = block.getRotatedPattern(90)
+                block.height = len(block.pattern)
+                block.width = len(block.pattern[0])
+
+            # Calculate position
+            next_x = self.nextX + ((self.cubeSize * self.holdingSize) // 2)
+            next_x = next_x - ((block.width * self.cubeSize) // 2)
+            next_y = self.nextY
+            
+            if (i > 0):
+                next_y += sum(self.game.next_blocks[id].height + 1 for id in range(i)) * self.cubeSize
+
+            for y, row in enumerate(block.pattern):
+                for x, state in enumerate(row):
+                    if state == 1:
+                        pygame.draw.rect(self.graphics, block.getColour(), (next_x + (self.cubeSize*x), next_y + (self.cubeSize*y), self.cubeSize, self.cubeSize)) 
+
     def render(self):
         self.graphics.fill(self.bgcolor)
         pygame.draw.rect(self.graphics, self.seccolor, (self.gridX, self.gridY, self.gridWide, self.gridTall))
