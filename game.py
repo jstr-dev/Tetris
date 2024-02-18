@@ -1,8 +1,9 @@
-from graphics import Graphics
-from block import * 
-import random 
+import time
+
 import pygame
-import time 
+
+from block import *
+from graphics import Graphics
 
 # Direction offset
 DIRECTION_OFFSET = {
@@ -11,12 +12,13 @@ DIRECTION_OFFSET = {
 }
 
 SPEED_KEY = pygame.K_DOWN
-ROTATE_RIGHT_KEY = pygame.K_UP 
+ROTATE_RIGHT_KEY = pygame.K_UP
 ROTATE_LEFT_KEY = pygame.K_z
 HOLD_BLOCK_KEY = pygame.K_c
 HARD_DROP_BLOCK_KEY = pygame.K_SPACE
 
-class Game():
+
+class Game:
     def __init__(self):
         """Set up initial values"""
 
@@ -25,17 +27,17 @@ class Game():
         pygame.display.set_caption("Tetris :)")
 
         # Graphics
-        self.graphics = Graphics((640+190, 850), self)
-        self.graphics.setDrawLines(False)
+        self.graphics = Graphics((640 + 190, 850), self)
+        self.graphics.set_draw_lines(False)
 
         # Logic info 
         self.running = False
 
         # Grid
-        self.width = 10 
-        self.height = 20 
+        self.width = 10
+        self.height = 20
         self.grid = [[0] * self.width for x in range(self.height)]
-        self.gridcol = [[None] * self.width for x in range(self.height)]
+        self.grid_col = [[None] * self.width for x in range(self.height)]
 
         # Block information
         self.current_block = None
@@ -44,55 +46,56 @@ class Game():
         self.block_time = 0.5
 
         # Holding block info
-        self.holding = None 
+        self.holding = None
         self.has_triggered_holding = False
 
         # Initially add first block to grid
-        self.chooseNextBlock()
+        self.choose_next_block()
 
-    def chooseNextBlock(self): 
+    def choose_next_block(self):
         """Chooses the next block and appends a new one"""
         self.current_block = self.next_blocks.pop(0)
         self.next_blocks.append(random.choice(BLOCKS)(self))
-        self.current_block.addToGrid()
+        self.current_block.add_to_grid()
 
-    def holdCurrentBlock(self):
-        """Holds the current block and replaces the current block with either a new block, or what was in holding prior"""
+    def hold_current_block(self):
+        """Holds the current block and replaces the current block with either a new block, or what was in holding
+        prior"""
         # If they have already tried to hold a block this turn, we disallow it.
-        if (self.has_triggered_holding): return 
-        
+        if self.has_triggered_holding: return
+
         # Store the current block in a temp variable and remove it from the grid
-        self.current_block.removeFromGrid()
-        temp_block = self.current_block 
+        self.current_block.remove_from_grid()
+        temp_block = self.current_block
 
-        if (self.holding != None):
+        if self.holding is not None:
             self.current_block = self.holding
-            self.current_block.resetPosition()
-            self.current_block.addToGrid() 
+            self.current_block.reset_position()
+            self.current_block.add_to_grid()
         else:
-            self.chooseNextBlock()
+            self.choose_next_block()
 
-        self.holding = temp_block 
-        self.has_triggered_holding = True 
+        self.holding = temp_block
+        self.has_triggered_holding = True
 
     def tick(self):
         """Called every tick"""
-        self.blockLogic()
+        self.block_logic()
 
         for e in pygame.event.get():
-            if e.type == pygame.QUIT: 
+            if e.type == pygame.QUIT:
                 return self.quit()
             if e.type == pygame.KEYUP:
-                self.registerKeyRelease(e.key)
-            if e.type == pygame.KEYDOWN: 
-                self.registerKeyPress(e.key) 
+                self.register_key_release(e.key)
+            if e.type == pygame.KEYDOWN:
+                self.register_key_press(e.key)
 
         self.graphics.render()
 
-    def registerKeyPress(self, key):
+    def register_key_press(self, key):
         """Key listener"""
         if DIRECTION_OFFSET.get(key):
-            self.current_block.moveSide(DIRECTION_OFFSET[key])
+            self.current_block.move_side(DIRECTION_OFFSET[key])
         if key == SPEED_KEY:
             self.block_time = 0.1
         if key == ROTATE_RIGHT_KEY:
@@ -100,29 +103,29 @@ class Game():
         if key == ROTATE_LEFT_KEY:
             self.current_block.rotate(-90)
         if key == HOLD_BLOCK_KEY:
-            self.holdCurrentBlock()
+            self.hold_current_block()
         if key == HARD_DROP_BLOCK_KEY:
             self.current_block.drop()
 
-    def registerKeyRelease(self, key):
+    def register_key_release(self, key):
         """Key listener"""
         if key == SPEED_KEY:
             self.block_time = 0.5
 
-    def blockLogic(self):
-        self.checkClearLines()
+    def block_logic(self):
+        self.check_clear_lines()
         time_since_drop = time.time() - self.last_drop
         if time_since_drop > self.block_time:
             self.last_drop = time.time()
             # Collision detection
-            collision = self.current_block.willCollideWithBlock(0, 1)
+            collision = self.current_block.will_collide_with_block(0, 1)
             if collision:
-                self.chooseNextBlock()
-                self.has_triggered_holding = False 
+                self.choose_next_block()
+                self.has_triggered_holding = False
             else:
-                self.current_block.moveDown()
+                self.current_block.move_down()
 
-    def checkClearLines(self):
+    def check_clear_lines(self):
         """Check and clear any completed lines from the grid"""
         lines_to_clear = []
         for y in range(self.height):
@@ -133,23 +136,23 @@ class Game():
             # Clear the line by setting all cells to 0
             for x in range(self.width):
                 self.grid[y][x] = 0
-                self.gridcol[y][x] = None 
+                self.grid_col[y][x] = None
 
-            # Move all lines above the cleared line down by 1
+                # Move all lines above the cleared line down by 1
             for row in range(y, 0, -1):
                 self.grid[row] = self.grid[row - 1]
-                self.gridcol[row] = self.gridcol[row - 1]
+                self.grid_col[row] = self.grid_col[row - 1]
 
             # Insert a new empty line at the top
             self.grid[0] = [0] * self.width
-            self.gridcol[0] = [None] * self.width
+            self.grid_col[0] = [None] * self.width
 
     def start(self):
-        self.running = True 
+        self.running = True
 
         while self.running:
-           self.tick()
+            self.tick()
 
     def quit(self):
-        self.running = False 
+        self.running = False
         pygame.quit()

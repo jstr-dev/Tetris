@@ -1,97 +1,102 @@
-import random 
+import random
 
 colours = [
-    (255, 0, 0), 
-    (0, 255, 0), 
-    (0, 0, 255), 
+    (255, 0, 0),
+    (0, 255, 0),
+    (0, 0, 255),
     (255, 255, 0),
-    (0, 255, 255) 
+    (0, 255, 255)
 ]
 
-class Block():
+
+class Block:
     """Class for tetris blocks"""
+
     def __init__(self, game):
-        self.pattern = None 
+        self.relative_pos = None
+        self.colour = None
+        self.width = None
+        self.height = None
+        self.y = None
+        self.x = None
+        self.pattern = None
         self.game = game
 
-    def resetPosition(self):
+    def reset_position(self):
         self.x = 5 - (self.width // 2)
-        self.y = 0 
+        self.y = 0
 
-    def setPattern(self, pattern):
+    def set_pattern(self, pattern):
         """Defines the shape of the block"""
         self.pattern = pattern
-        self.pattern = self.getRotatedPattern(90 * random.randrange(0, 4)) # Get a randomly rotated shape each time
+        self.pattern = self.get_rotated_pattern(90 * random.randrange(0, 4))
 
         self.height = len(self.pattern)
         self.width = len(self.pattern[0])
-        self.resetPosition()
+        self.reset_position()
 
         self.colour = colours[random.randrange(0, 5)]
-        self.relative_coords = set()
-    
-    def getColour(self):
-        return self.colour 
+        self.relative_pos = set()
 
-    def isWithinBoundaries(self, x, y, pattern = None):
+    def get_colour(self):
+        return self.colour
+
+    def is_within_boundaries(self, x, y, pattern=None):
         """Check if the new position is within the game boundaries"""
-        height = pattern != None and len(pattern) or self.height 
-        width = pattern != None and len(pattern[0]) or self.width 
+        height = pattern is not None and len(pattern) or self.height
+        width = pattern is not None and len(pattern[0]) or self.width
 
         return 0 <= y <= self.game.height - height and 0 <= x <= self.game.width - width
 
-    def willCollideWithBlock(self, x_offset = 0, y_offset = 0, pattern = None):
+    def will_collide_with_block(self, x_offset=0, y_offset=0, pattern=None):
         """Check if the block will collide with another block at the new position"""
-        if not self.isWithinBoundaries(self.x + x_offset, self.y + y_offset, pattern):
+        if not self.is_within_boundaries(self.x + x_offset, self.y + y_offset, pattern):
             return True
-        
-        for y, row in enumerate(pattern != None and pattern or self.pattern):
+
+        for y, row in enumerate(pattern is not None and pattern or self.pattern):
             for x, state in enumerate(row):
                 if state == 1:
                     new_y = self.y + y + y_offset
                     new_x = self.x + x + x_offset
 
-                    if self.game.grid[new_y][new_x] != 0 and (new_y, new_x) not in self.relative_coords:
+                    if self.game.grid[new_y][new_x] != 0 and (new_y, new_x) not in self.relative_pos:
                         return True
-                    
+
         return False
 
-    def addToGrid(self):
-        """Adding the block to game's grid at it's current x, y coords"""
-        self.relative_coords = set()
+    def add_to_grid(self):
+        """Adding the block to game's grid at its current x, y cords"""
+        self.relative_pos = set()
         for y, row in enumerate(self.pattern):
             for x, state in enumerate(row):
                 if state == 1:
                     self.game.grid[self.y + y][self.x + x] = state
-                    self.game.gridcol[self.y + y][self.x + x] = state and self.getColour() or None 
-                    self.relative_coords.add((self.y + y, self.x + x))
-    
-    def removeFromGrid(self):
+                    self.game.grid_col[self.y + y][self.x + x] = state and self.get_colour() or None
+                    self.relative_pos.add((self.y + y, self.x + x))
+
+    def remove_from_grid(self):
         """Remove block from the grid"""
         for y, row in enumerate(self.pattern):
             for x, state in enumerate(row):
                 if state == 1:
                     self.game.grid[self.y + y][self.x + x] = 0
-                    self.game.gridcol[self.y + y][self.x + x] = None 
+                    self.game.grid_col[self.y + y][self.x + x] = None
 
-    def moveSide(self, offset):
+    def move_side(self, offset):
         """Tries to move the tetris block by some x offset"""
-        # If moving to the left/right will collide then we don't move
-        if self.willCollideWithBlock(offset): return False
+        if self.will_collide_with_block(offset): return False
 
-        # Redraw the shape at the new position
-        self.removeFromGrid()
+        self.remove_from_grid()
         self.x += offset
-        self.addToGrid()
-    
-    def moveDown(self):
-        """Moves the tetris block down by 1 square"""
-        # Redraw the shape at the new position
-        self.removeFromGrid()
-        self.y += 1
-        self.addToGrid()
+        self.add_to_grid()
 
-    def getRotatedPattern(self, angle):
+    def move_down(self):
+        """Moves the tetris block down by 1 square"""
+        self.remove_from_grid()
+        self.y += 1
+        self.add_to_grid()
+
+    def get_rotated_pattern(self, angle):
         """Return the pattern of the Tetris block after rotating by the specified angle"""
         rotations = angle // 90
         rotated_pattern = self.pattern
@@ -102,82 +107,87 @@ class Block():
         return rotated_pattern
 
     def rotate(self, angle):
-        # Get new rotated matrix
-        new_pattern = self.getRotatedPattern(angle)
+        """Rotates a shape by a specified angle, in 90 degree intervals"""
+        new_pattern = self.get_rotated_pattern(angle)
 
-        # Check for collisions
-        if self.willCollideWithBlock(0, 0, new_pattern): return 
+        if self.will_collide_with_block(0, 0, new_pattern): return
 
-        self.removeFromGrid()
+        self.remove_from_grid()
         self.pattern = new_pattern
         self.height = len(self.pattern)
         self.width = len(self.pattern[0])
-        self.addToGrid()
+        self.add_to_grid()
 
     def drop(self):
         """Drop a block to the bottom"""
-        while not self.willCollideWithBlock(0, 1):
-            self.moveDown()
+        while not self.will_collide_with_block(0, 1):
+            self.move_down()
 
-        self.game.blockLogic()
-        
+        self.game.block_logic()
+
+
 class StraightBlock(Block):
     def __init__(self, game):
-       super().__init__(game)
-       self.setPattern([
-           [1, 1, 1, 1]
-       ]) 
+        super().__init__(game)
+        self.set_pattern([
+            [1, 1, 1, 1]
+        ])
+
 
 class CubeBlock(Block):
     def __init__(self, game):
         super().__init__(game)
-        self.setPattern([
+        self.set_pattern([
             [1, 1],
             [1, 1]
         ])
 
+
 class TBlock(Block):
-     def __init__(self, game):
+    def __init__(self, game):
         super().__init__(game)
-        self.setPattern([
+        self.set_pattern([
             [0, 1, 0],
             [1, 1, 1]
         ])
 
+
 class LBlock(Block):
     def __init__(self, game):
         super().__init__(game)
-        self.setPattern([
+        self.set_pattern([
             [1, 0],
             [1, 0],
             [1, 1]
         ])
+
 
 class JBlock(Block):
     def __init__(self, game):
         super().__init__(game)
-        self.setPattern([
+        self.set_pattern([
             [0, 1],
             [0, 1],
             [1, 1]
         ])
 
+
 class SBlock(Block):
     def __init__(self, game):
         super().__init__(game)
-        self.setPattern([
+        self.set_pattern([
             [0, 1, 1],
             [1, 1, 0]
         ])
 
+
 class ZBlock(Block):
     def __init__(self, game):
         super().__init__(game)
-        self.setPattern([
+        self.set_pattern([
             [1, 1, 0],
             [0, 1, 1]
         ])
 
+
 BLOCKS = [StraightBlock, CubeBlock, LBlock, TBlock, JBlock, SBlock, ZBlock]
-# BLOCKS = [StraightBlock, ZBlock]
-# BLOCKS = [ZBlock, SBlock]
