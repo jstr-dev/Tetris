@@ -1,1 +1,4 @@
 __pycache__/*
+.env
+.gitignore
+tetris.code-workspace

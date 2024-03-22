@@ -84,7 +84,8 @@ class Block:
 
     def move_side(self, offset):
         """Tries to move the tetris block by some x offset"""
-        if self.will_collide_with_block(offset): return False
+        if self.will_collide_with_block(offset):
+            return False
 
         self.remove_from_grid()
         self.x += offset
@@ -110,7 +111,8 @@ class Block:
         """Rotates a shape by a specified angle, in 90 degree intervals"""
         new_pattern = self.get_rotated_pattern(angle)
 
-        if self.will_collide_with_block(0, 0, new_pattern): return
+        if self.will_collide_with_block(0, 0, new_pattern):
+            return
 
         self.remove_from_grid()
         self.pattern = new_pattern

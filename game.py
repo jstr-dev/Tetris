@@ -30,18 +30,18 @@ class Game:
         self.graphics = Graphics((640 + 190, 850), self)
         self.graphics.set_draw_lines(False)
 
-        # Logic info 
+        # Logic info
         self.running = False
 
         # Grid
         self.width = 10
         self.height = 20
-        self.grid = [[0] * self.width for x in range(self.height)]
-        self.grid_col = [[None] * self.width for x in range(self.height)]
+        self.grid = [[0] * self.width for _ in range(self.height)]
+        self.grid_col = [[None] * self.width for _ in range(self.height)]
 
         # Block information
         self.current_block = None
-        self.next_blocks = [random.choice(BLOCKS)(self) for x in range(3)]
+        self.next_blocks = [random.choice(BLOCKS)(self) for _ in range(3)]
         self.last_drop = time.time()
         self.block_time = 0.5
 
@@ -52,6 +52,9 @@ class Game:
         # Initially add first block to grid
         self.choose_next_block()
 
+        self.keys = set()
+        self.key_duration = dict()
+
     def choose_next_block(self):
         """Chooses the next block and appends a new one"""
         self.current_block = self.next_blocks.pop(0)
@@ -61,10 +64,10 @@ class Game:
     def hold_current_block(self):
         """Holds the current block and replaces the current block with either a new block, or what was in holding
         prior"""
-        # If they have already tried to hold a block this turn, we disallow it.
-        if self.has_triggered_holding: return
+        if self.has_triggered_holding:
+            return
 
-        # Store the current block in a temp variable and remove it from the grid
+        # My comment test
         self.current_block.remove_from_grid()
         temp_block = self.current_block
 
@@ -86,9 +89,16 @@ class Game:
             if e.type == pygame.QUIT:
                 return self.quit()
             if e.type == pygame.KEYUP:
+                self.keys.remove(e.key)
                 self.register_key_release(e.key)
             if e.type == pygame.KEYDOWN:
-                self.register_key_press(e.key)
+                self.keys.add(e.key)
+
+        for key in self.keys:
+            duration = self.key_duration.get(key, 0)
+            if duration < time.time_ns():
+                self.register_key_press(key)
+                self.key_duration[key] = time.time_ns() + 200000000
 
         self.graphics.render()
 
@@ -115,13 +125,19 @@ class Game:
     def block_logic(self):
         self.check_clear_lines()
         time_since_drop = time.time() - self.last_drop
+
         if time_since_drop > self.block_time:
             self.last_drop = time.time()
+
             # Collision detection
             collision = self.current_block.will_collide_with_block(0, 1)
             if collision:
                 self.choose_next_block()
                 self.has_triggered_holding = False
+
+                if self.current_block.will_collide_with_block(0, 1):
+                    self.running = False
+                    print("Game Over")
             else:
                 self.current_block.move_down()
 
@@ -138,7 +154,7 @@ class Game:
                 self.grid[y][x] = 0
                 self.grid_col[y][x] = None
 
-                # Move all lines above the cleared line down by 1
+            # Move all lines above the cleared line down by 1
             for row in range(y, 0, -1):
                 self.grid[row] = self.grid[row - 1]
                 self.grid_col[row] = self.grid_col[row - 1]
