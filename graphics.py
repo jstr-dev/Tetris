@@ -112,6 +112,14 @@ class Graphics:
                         pygame.draw.rect(self.graphics, block.get_colour(), (
                             next_x + (self.cubeSize * x), next_y + (self.cubeSize * y), self.cubeSize, self.cubeSize))
 
+    def render_score(self):
+        """Render the game score and level"""
+        font = pygame.font.SysFont("monospace", 30)
+        score_text = font.render(f"Score: {self.game.score}", True, (255, 255, 255))
+        level_text = font.render(f"Level: {self.game.get_level()}", True, (255, 255, 255))
+        self.graphics.blit(score_text, (10, 10))
+        self.graphics.blit(level_text, (10, 40))
+
     def render(self):
         self.graphics.fill(self.primary)
         pygame.draw.rect(self.graphics, self.secondary, (self.gridX, self.gridY, self.gridWide, self.gridTall))
@@ -120,5 +128,6 @@ class Graphics:
         self.render_grid()
         self.render_next_blocks()
         self.render_holding()
+        self.render_score()
 
         pygame.display.update()

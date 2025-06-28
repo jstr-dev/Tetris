@@ -54,6 +54,16 @@ class Game:
 
         self.keys = set()
         self.key_duration = dict()
+        self.score = 0;
+        self.lines = 0
+
+    def get_level(self):
+        """Returns the level of the game"""
+        return 1 + int(self.lines / 10)
+
+    def on_lines_cleared(self, lines_cleared):
+        """Called when lines are cleared"""
+        self.score += 100 * self.get_level() * lines_cleared
 
     def choose_next_block(self):
         """Chooses the next block and appends a new one"""
@@ -162,6 +172,12 @@ class Game:
             # Insert a new empty line at the top
             self.grid[0] = [0] * self.width
             self.grid_col[0] = [None] * self.width
+            self.lines += 1;
+
+        if len(lines_to_clear) == 0:
+            return
+
+        self.on_lines_cleared(len(lines_to_clear))
 
     def start(self):
         self.running = True
