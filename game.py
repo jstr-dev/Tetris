@@ -17,7 +17,7 @@ ROTATE_LEFT_KEY = pygame.K_z
 HOLD_BLOCK_KEY = pygame.K_c
 HARD_DROP_BLOCK_KEY = pygame.K_SPACE
 
-DEFAULT_BLOCK_SPEED = 0.5
+DEFAULT_BLOCK_SPEED = 1 
 FAST_BLOCK_SPEED = 0.1
 
 class Game:
@@ -61,6 +61,8 @@ class Game:
 
         # Drop state, should change each drop 
         self.drop_state = {}
+        
+        self.show_block_preview = True
 
     def log(self, message):
         print(f"[DEBUG] [TS: {time.time()}] {message}")

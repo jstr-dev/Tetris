@@ -1,3 +1,4 @@
+import copy
 import pygame
 
 COLOUR_BLACK = (0, 0, 0)
@@ -131,11 +132,44 @@ class Graphics:
                 (self.width - 10 - text.get_width(), self.height - 15 - (15 * i) - 10)
             )
 
+    def render_block_preview(self):
+        """Render the block preview, where the block would land if they hard-dropped"""
+        block = self.game.current_block
+
+        # Create a deep copy of the block
+        shadow_block = type(block)(self.game)
+        shadow_block.y = block.y
+        shadow_block.x = block.x
+        shadow_block.width = block.width
+        shadow_block.height = block.height
+        shadow_block.relative_pos = copy.deepcopy(block.relative_pos)
+        shadow_block.pattern = copy.deepcopy(block.pattern)
+
+        while not shadow_block.will_collide_with_block(0, 1):
+            shadow_block.y += 1
+
+        for y, row in enumerate(shadow_block.pattern):
+            for x, state in enumerate(row):
+                if state == 1:
+                    pygame.draw.rect(self.graphics, (100, 100, 100), (
+                        self.gridX + (self.cubeSize * (shadow_block.x + x)), 
+                        self.gridY + (self.cubeSize * (shadow_block.y + y)), 
+                        self.cubeSize, 
+                        self.cubeSize)
+                    )
+
+
     def render(self):
+        """Renders the game to the screen
+
+        This function clears the screen, renders the main game grid, the next blocks to be spawned, the block that is
+        currently being held, the score, and the debug messages. It will then update the display to show the new frame.
+        """
         self.graphics.fill(self.primary)
         pygame.draw.rect(self.graphics, self.secondary, (self.gridX, self.gridY, self.gridWide, self.gridTall))
 
         # Render normal game
+        self.render_block_preview()
         self.render_grid()
         self.render_next_blocks()
         self.render_holding()

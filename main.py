@@ -8,4 +8,5 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"[CRASH] Game crashed, exception: {e}")
         game.quit()
+        raise e 
     
