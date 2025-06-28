@@ -84,6 +84,8 @@ class Block:
 
     def move_side(self, offset):
         """Tries to move the tetris block by some x offset"""
+        self.game.log('Move to side')
+
         if self.will_collide_with_block(offset):
             return False
 
@@ -122,6 +124,9 @@ class Block:
 
     def drop(self):
         """Drop a block to the bottom"""
+        self.game.log('Hard drop')
+        # self.game.tick_state.hard_drop = True
+
         while not self.will_collide_with_block(0, 1):
             self.move_down()
 

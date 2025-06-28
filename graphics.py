@@ -122,6 +122,15 @@ class Graphics:
         self.graphics.blit(score_text, (10, 10))
         self.graphics.blit(level_text, (10, 40))
 
+    def render_debug(self):
+        font = pygame.font.SysFont("monospace", 15)
+        for i, debug in enumerate(self.game.debug_messages):
+            text = font.render('DEBUG: ' + debug, True, (255, 255, 255))
+            self.graphics.blit(
+                text, 
+                (self.width - 10 - text.get_width(), self.height - 15 - (15 * i) - 10)
+            )
+
     def render(self):
         self.graphics.fill(self.primary)
         pygame.draw.rect(self.graphics, self.secondary, (self.gridX, self.gridY, self.gridWide, self.gridTall))
@@ -131,5 +140,6 @@ class Graphics:
         self.render_next_blocks()
         self.render_holding()
         self.render_score()
+        self.render_debug()
 
         pygame.display.update()

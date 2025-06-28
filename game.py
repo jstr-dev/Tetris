@@ -51,13 +51,27 @@ class Game:
         self.holding = None
         self.has_triggered_holding = False
 
-        # Initially add first block to grid
-        self.choose_next_block()
-
         self.keys = set()
         self.key_duration = dict()
         self.score = 0;
         self.lines = 0
+
+        self.debug_mode = 1
+        self.debug_messages = []
+
+        # Tick state, should change each tick
+        self.tick_state = {}
+
+    def log(self, message):
+        print(f"[DEBUG] [TS: {time.time()}] {message}")
+
+        if self.debug_mode == 0:
+            return
+
+        if len(self.debug_messages) > 5:
+            self.debug_messages.pop(0)
+
+        self.debug_messages.append(message)
 
     def get_level(self):
         """Returns the level of the game"""
@@ -69,6 +83,7 @@ class Game:
 
     def choose_next_block(self):
         """Chooses the next block and appends a new one"""
+        self.log("Block changed")
         self.current_block = self.next_blocks.pop(0)
         self.next_blocks.append(random.choice(BLOCKS)(self))
         self.current_block.add_to_grid()
@@ -101,6 +116,7 @@ class Game:
 
     def tick(self):
         """Called every tick"""
+        self.tick_state = {}
         self.block_logic()
 
         for e in pygame.event.get():
@@ -188,6 +204,7 @@ class Game:
         self.on_lines_cleared(len(lines_to_clear))
 
     def start(self):
+        self.choose_next_block()
         self.running = True
 
         while self.running:
