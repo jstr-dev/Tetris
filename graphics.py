@@ -48,7 +48,7 @@ class Graphics:
                     pygame.draw.rect(self.graphics, self.game.grid_col[y][x], (
                         self.gridX + (self.cubeSize * x), self.gridY + (self.cubeSize * y), self.cubeSize,
                         self.cubeSize))
-
+                    
         if self.draw_lines:
             for x in range(11):
                 pygame.draw.line(self.graphics, self.linecol, (self.gridX + (self.cubeSize * x), self.gridY),
@@ -56,6 +56,8 @@ class Graphics:
             for y in range(21):
                 pygame.draw.line(self.graphics, self.linecol, (self.gridX, self.gridY + (self.cubeSize * y)),
                                  (self.gridWide + self.gridX, self.gridY + (self.cubeSize * y)))
+
+        self.render_block_preview()
 
     def render_holding(self):
         pygame.draw.rect(self.graphics, self.secondary, (self.holdX, self.holdY, self.holdWide, self.holdTall))
@@ -148,14 +150,16 @@ class Graphics:
         while not shadow_block.will_collide_with_block(0, 1):
             shadow_block.y += 1
 
+        colour = block.get_colour()
         for y, row in enumerate(shadow_block.pattern):
             for x, state in enumerate(row):
                 if state == 1:
-                    pygame.draw.rect(self.graphics, (100, 100, 100), (
+                    pygame.draw.rect(self.graphics, colour, (
                         self.gridX + (self.cubeSize * (shadow_block.x + x)), 
                         self.gridY + (self.cubeSize * (shadow_block.y + y)), 
                         self.cubeSize, 
-                        self.cubeSize)
+                        self.cubeSize), 
+                        1
                     )
 
 
@@ -169,7 +173,6 @@ class Graphics:
         pygame.draw.rect(self.graphics, self.secondary, (self.gridX, self.gridY, self.gridWide, self.gridTall))
 
         # Render normal game
-        self.render_block_preview()
         self.render_grid()
         self.render_next_blocks()
         self.render_holding()
