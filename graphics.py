@@ -159,7 +159,7 @@ class Graphics:
                         self.gridY + (self.cubeSize * (shadow_block.y + y)), 
                         self.cubeSize, 
                         self.cubeSize), 
-                        1
+                        2
                     )
 
 
