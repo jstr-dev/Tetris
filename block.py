@@ -86,6 +86,9 @@ class Block:
         """Tries to move the tetris block by some x offset"""
         self.game.log('Move to side')
 
+        if (self.game.drop_state.get('hard_drop')):
+            return;
+
         if self.will_collide_with_block(offset):
             return False
 
@@ -125,12 +128,12 @@ class Block:
     def drop(self):
         """Drop a block to the bottom"""
         self.game.log('Hard drop')
-        # self.game.tick_state.hard_drop = True
+        self.game.drop_state['hard_drop'] = True
 
         while not self.will_collide_with_block(0, 1):
             self.move_down()
 
-        self.game.block_logic()
+        self.game.force_next_drop(self.game.get_block_speed())
 
 
 class StraightBlock(Block):

@@ -59,8 +59,8 @@ class Game:
         self.debug_mode = 1
         self.debug_messages = []
 
-        # Tick state, should change each tick
-        self.tick_state = {}
+        # Drop state, should change each drop 
+        self.drop_state = {}
 
     def log(self, message):
         print(f"[DEBUG] [TS: {time.time()}] {message}")
@@ -116,7 +116,6 @@ class Game:
 
     def tick(self):
         """Called every tick"""
-        self.tick_state = {}
         self.block_logic()
 
         for e in pygame.event.get():
@@ -156,11 +155,20 @@ class Game:
         if key == SPEED_KEY:
             self.fast_mode = False
 
+    def force_next_drop(self, offset = 0):
+        """Reset the last drop date"""
+        if offset > 0:
+            self.last_drop = time.time() - offset
+
+        self.last_drop = 0
+
     def block_logic(self):
         self.check_clear_lines()
         time_since_drop = time.time() - self.last_drop
 
         if time_since_drop > self.get_block_speed():
+            # self.log('Drop')
+            self.drop_state = {}
             self.last_drop = time.time()
 
             # Collision detection
