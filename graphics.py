@@ -30,9 +30,11 @@ class Graphics:
         self.graphics = pygame.display.set_mode(res)
         self.primary = (45, 45, 45)
         self.secondary = (40, 40, 40)
-        self.linecol = (230, 230, 230)
+        self.linecol = (130, 130, 130)
 
         self.draw_lines = True
+        self.draw_lines_holding = False
+        self.draw_lines_next = False
 
     def set_draw_lines(self, state):
         """Controls whether grid lines should be drawn"""
@@ -57,7 +59,7 @@ class Graphics:
     def render_holding(self):
         pygame.draw.rect(self.graphics, self.secondary, (self.holdX, self.holdY, self.holdWide, self.holdTall))
 
-        if self.draw_lines:
+        if self.draw_lines_holding:
             for x in range(5):
                 pygame.draw.line(self.graphics, self.linecol, (self.holdX + (self.cubeSize * x), self.holdY),
                                  (self.holdX + (self.cubeSize * x), self.holdTall + self.holdY))
@@ -81,7 +83,7 @@ class Graphics:
     def render_next_blocks(self):
         pygame.draw.rect(self.graphics, self.secondary, (self.nextX, self.nextY, self.nextWide, self.nextTall))
 
-        if self.draw_lines:
+        if self.draw_lines_next:
             for x in range(5):
                 pygame.draw.line(self.graphics, self.linecol, (self.nextX + (self.cubeSize * x), self.nextY),
                                  (self.nextX + (self.cubeSize * x), self.nextTall + self.nextY))

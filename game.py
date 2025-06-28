@@ -17,6 +17,8 @@ ROTATE_LEFT_KEY = pygame.K_z
 HOLD_BLOCK_KEY = pygame.K_c
 HARD_DROP_BLOCK_KEY = pygame.K_SPACE
 
+DEFAULT_BLOCK_SPEED = 0.5
+FAST_BLOCK_SPEED = 0.1
 
 class Game:
     def __init__(self):
@@ -28,7 +30,7 @@ class Game:
 
         # Graphics
         self.graphics = Graphics((640 + 190, 850), self)
-        self.graphics.set_draw_lines(False)
+        self.graphics.set_draw_lines(True)
 
         # Logic info
         self.running = False
@@ -43,7 +45,7 @@ class Game:
         self.current_block = None
         self.next_blocks = [random.choice(BLOCKS)(self) for _ in range(3)]
         self.last_drop = time.time()
-        self.block_time = 0.5
+        self.fast_mode = False
 
         # Holding block info
         self.holding = None
@@ -70,6 +72,12 @@ class Game:
         self.current_block = self.next_blocks.pop(0)
         self.next_blocks.append(random.choice(BLOCKS)(self))
         self.current_block.add_to_grid()
+
+    def get_block_speed(self):
+        """Returns the current block speed"""
+        if (self.fast_mode):
+            return 0.1
+        return DEFAULT_BLOCK_SPEED - ((self.get_level() - 1) * 0.05)
 
     def hold_current_block(self):
         """Holds the current block and replaces the current block with either a new block, or what was in holding
@@ -117,7 +125,7 @@ class Game:
         if DIRECTION_OFFSET.get(key):
             self.current_block.move_side(DIRECTION_OFFSET[key])
         if key == SPEED_KEY:
-            self.block_time = 0.1
+            self.fast_mode = True 
         if key == ROTATE_RIGHT_KEY:
             self.current_block.rotate(90)
         if key == ROTATE_LEFT_KEY:
@@ -130,13 +138,13 @@ class Game:
     def register_key_release(self, key):
         """Key listener"""
         if key == SPEED_KEY:
-            self.block_time = 0.5
+            self.fast_mode = False
 
     def block_logic(self):
         self.check_clear_lines()
         time_since_drop = time.time() - self.last_drop
 
-        if time_since_drop > self.block_time:
+        if time_since_drop > self.get_block_speed():
             self.last_drop = time.time()
 
             # Collision detection
