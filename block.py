@@ -112,12 +112,35 @@ class Block:
 
         return rotated_pattern
 
+    def get_posible_rotate_coords(self, pattern):
+        width = len(pattern[0])
+        height = len(pattern)
+
+        # Case on the right, trying to rotate
+        for x_offset in range(width):
+            if not self.will_collide_with_block(-(x_offset + 1), 0, pattern): 
+                return self.x + -(x_offset + 1), self.y
+
+        # Case on the bottom, trying to rotate
+        for y_offset in range(height):
+            if not self.will_collide_with_block(0, -(y_offset + 1), pattern):
+                return self.x, self.y + -(y_offset + 1)
+
+        return False, False
+
     def rotate(self, angle):
         """Rotates a shape by a specified angle, in 90 degree intervals"""
         new_pattern = self.get_rotated_pattern(angle)
 
         if self.will_collide_with_block(0, 0, new_pattern):
-            return
+            x, y = self.get_posible_rotate_coords(new_pattern)
+
+            if x is not None and y is not None:
+                self.remove_from_grid()
+                self.x = x
+                self.y = y
+            else:
+                return
 
         self.remove_from_grid()
         self.pattern = new_pattern
