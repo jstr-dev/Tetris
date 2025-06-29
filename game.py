@@ -45,7 +45,10 @@ class Game:
         self.current_block = None
         self.next_blocks = [random.choice(BLOCKS)(self) for _ in range(3)]
         self.last_drop = time.time()
+
+        # Fast Mode
         self.fast_mode = False
+        self.direction_fast_at = 0
 
         # Holding block info
         self.holding = None
@@ -131,7 +134,12 @@ class Game:
 
         for key in self.keys:
             duration = self.key_duration.get(key, 0)
-            if duration < time.time_ns():
+            bypassDurationOffset = 130000000
+            bypassDuration = (self.direction_fast_at != 0 
+                              and time.time_ns() > self.direction_fast_at
+                              and DIRECTION_OFFSET.get(key)
+                              and time.time_ns() > (duration - bypassDurationOffset))
+            if duration < time.time_ns() or bypassDuration:
                 self.register_key_press(key)
                 self.key_duration[key] = time.time_ns() + 200000000
 
@@ -141,6 +149,8 @@ class Game:
         """Key listener"""
         if DIRECTION_OFFSET.get(key):
             self.current_block.move_side(DIRECTION_OFFSET[key])
+            if self.direction_fast_at == 0:
+                self.direction_fast_at = time.time_ns() + 200000000
         if key == SPEED_KEY:
             self.fast_mode = True 
         if key == ROTATE_RIGHT_KEY:
@@ -150,12 +160,20 @@ class Game:
         if key == HOLD_BLOCK_KEY:
             self.hold_current_block()
         if key == HARD_DROP_BLOCK_KEY:
+            old_y = self.current_block.y
             self.current_block.drop()
+            new_y = self.current_block.y
+            diff = abs(new_y - old_y)
+
+            if diff:
+                self.score += diff * 2
 
     def register_key_release(self, key):
         """Key listener"""
         if key == SPEED_KEY:
             self.fast_mode = False
+        if DIRECTION_OFFSET.get(key):
+            self.direction_fast_at = 0
 
     def force_next_drop(self, offset = 0):
         """Reset the last drop date"""
@@ -183,6 +201,9 @@ class Game:
                     self.running = False
                     print("Game Over")
             else:
+                if self.fast_mode:
+                    self.score += 1
+
                 self.current_block.move_down()
 
     def check_clear_lines(self):

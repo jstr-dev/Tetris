@@ -112,7 +112,7 @@ class Block:
 
         return rotated_pattern
 
-    def get_posible_rotate_coords(self, pattern):
+    def get_possible_rotate_coords(self, pattern):
         width = len(pattern[0])
         height = len(pattern)
 
@@ -133,7 +133,7 @@ class Block:
         new_pattern = self.get_rotated_pattern(angle)
 
         if self.will_collide_with_block(0, 0, new_pattern):
-            x, y = self.get_posible_rotate_coords(new_pattern)
+            x, y = self.get_possible_rotate_coords(new_pattern)
 
             if x is not None and y is not None:
                 self.remove_from_grid()
