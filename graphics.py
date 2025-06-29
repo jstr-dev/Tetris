@@ -41,22 +41,28 @@ class Graphics:
         """Controls whether grid lines should be drawn"""
         self.draw_lines = state
 
-    def render_grid(self):
+    def render_grid_lines(self):
+        if not self.draw_lines:
+            return 
+        
+        for x in range(11):
+            pygame.draw.line(self.graphics, self.linecol, (self.gridX + (self.cubeSize * x), self.gridY),
+                                (self.gridX + (self.cubeSize * x), self.gridTall + self.gridY))
+        for y in range(21):
+            pygame.draw.line(self.graphics, self.linecol, (self.gridX, self.gridY + (self.cubeSize * y)),
+                                (self.gridWide + self.gridX, self.gridY + (self.cubeSize * y)))
+
+    def render_blocks_in_play(self):
         for y, d in enumerate(self.game.grid):
             for x, state in enumerate(d):
                 if state == 1:
                     pygame.draw.rect(self.graphics, self.game.grid_col[y][x], (
                         self.gridX + (self.cubeSize * x), self.gridY + (self.cubeSize * y), self.cubeSize,
                         self.cubeSize))
-                    
-        if self.draw_lines:
-            for x in range(11):
-                pygame.draw.line(self.graphics, self.linecol, (self.gridX + (self.cubeSize * x), self.gridY),
-                                 (self.gridX + (self.cubeSize * x), self.gridTall + self.gridY))
-            for y in range(21):
-                pygame.draw.line(self.graphics, self.linecol, (self.gridX, self.gridY + (self.cubeSize * y)),
-                                 (self.gridWide + self.gridX, self.gridY + (self.cubeSize * y)))
 
+    def render_grid(self):
+        self.render_blocks_in_play() 
+        self.render_grid_lines()
         self.render_block_preview()
 
     def render_holding(self):
@@ -151,16 +157,17 @@ class Graphics:
             shadow_block.y += 1
 
         colour = block.get_colour()
-        for y, row in enumerate(shadow_block.pattern):
-            for x, state in enumerate(row):
+        sizeOffset = 2
+        size = self.cubeSize - sizeOffset + 1 
+        for pattern_y, row in enumerate(shadow_block.pattern):
+            for pattern_x, state in enumerate(row):
                 if state == 1:
                     pygame.draw.rect(self.graphics, colour, (
-                        self.gridX + (self.cubeSize * (shadow_block.x + x)), 
-                        self.gridY + (self.cubeSize * (shadow_block.y + y)), 
-                        self.cubeSize, 
-                        self.cubeSize), 
-                        2
-                    )
+                        self.gridX + (self.cubeSize * (pattern_x + shadow_block.x)) + (sizeOffset // 2),
+                        self.gridY + (self.cubeSize * (pattern_y + shadow_block.y)) + (sizeOffset // 2),
+                        size,
+                        size,
+                    ), 2)
 
 
     def render(self):
